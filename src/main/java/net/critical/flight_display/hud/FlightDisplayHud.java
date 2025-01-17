@@ -36,7 +36,7 @@ public class FlightDisplayHud implements Drawable {
     private double last_y=0;
     private double last_z=0;
     private long last_time=0;
-    private int speed=0;
+    private float speed=0;
 
     public FlightDisplayHud(MinecraftClient client) {
         this.client = client;
@@ -68,8 +68,8 @@ public class FlightDisplayHud implements Drawable {
 
         int lineHeight = this.fontRenderer.fontHeight + 2;
 
-        context.drawText(this.client.textRenderer, String.format("Pitch: %s", (float) this.player.getPitch(0)*-1), (int) left+10, (int) middle_height, Color.RED.getRGB(), false);
-        context.drawText(this.client.textRenderer, String.format("Speed: %s", (float) this.speed ), (int) left+10, (int) bottom, Color.RED.getRGB(), false);
+        context.drawText(this.client.textRenderer, String.format("Pitch: %.2f", (float) this.player.getPitch(0)*-1), (int) left+10, (int) middle_height, Color.RED.getRGB(), false);
+        context.drawText(this.client.textRenderer, String.format("Speed: %.2f", (float) this.speed ), (int) left+10, (int) bottom, Color.RED.getRGB(), false);
 
         Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
 
@@ -86,10 +86,13 @@ public class FlightDisplayHud implements Drawable {
             }
         }
 
-//        this.fontRenderer.draw( String.format("%s %s %s",  (int) this.last_x, (int) this.last_y, (int) this.last_z), (float) left+10, (float) bottom+lineHeight, Color.RED.getRGB());
-//        this.fontRenderer.draw( String.format("%s %s %s",  (int) client.player.getX(), (int) client.player.getY(), (int) client.player.getZ()), (float) left+10, (float) bottom+(lineHeight*2), Color.RED.getRGB());
-//        this.fontRenderer.draw( String.format("%s",  client.world.getTime()), (float) left+10, (float) bottom+(lineHeight*3), Color.RED.getRGB());
+        long timeNow = client.world.getTime();
 
+/*context.drawText(this.client.textRenderer, String.format("%f %f %f",  this.last_x, this.last_y, this.last_z), (int) left+10, (int) bottom+lineHeight, Color.RED.getRGB(), false);
+context.drawText(this.client.textRenderer, String.format("%f %f %f",  client.player.getX(), client.player.getY(), client.player.getZ()), (int) left+10, (int) bottom+(lineHeight*2), Color.RED.getRGB(), false);
+context.drawText(this.client.textRenderer, String.format("t %s",  timeNow), (int) left+10, (int) bottom+(lineHeight*3), Color.RED.getRGB(), false);
+context.drawText(this.client.textRenderer, String.format("dT %s",  (timeNow - this.last_time)), (int) left+10, (int) bottom+(lineHeight*4), Color.RED.getRGB(), false);
+*/
          context.drawVerticalLine(
             (int)left,
             (int)top,
@@ -101,11 +104,11 @@ public class FlightDisplayHud implements Drawable {
             (int)bottom,
             Colors.GREEN);
 
-        if (client.world.getTime() > this.last_time+10) {
-            double distance = (Math.pow(client.player.getX() -  this.last_x, 2) + Math.pow(client.player.getY() -  this.last_y, 2) + Math.pow(client.player.getZ() -  this.last_z, 2)) * 0.5;
-            this.speed = (int) (distance/(client.world.getTime() - this.last_time));
+        if (timeNow > (this.last_time)) {
+            double distance = Math.sqrt(Math.pow(client.player.getX() -  this.last_x, 2) + Math.pow(client.player.getY() -  this.last_y, 2) + Math.pow(client.player.getZ() -  this.last_z, 2));
+            this.speed = (float)(distance/(timeNow - this.last_time))*20; //20 ticks per game second, so computes meters per second
 
-            this.last_time = client.world.getTime();
+            this.last_time = timeNow;
             this.last_x = client.player.getX();
             this.last_y = client.player.getY();
             this.last_z = client.player.getZ();
